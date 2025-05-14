@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 
 const CategorieSchema = new mongoose.Schema({
-    designationCategorie: { type: String, required: true }
+    designationCategorie: { type: String, required: true },
+    codeCategorie:{type:String, unique:true , required:true}
 });
 
 const Categorie = mongoose.model("Categorie", CategorieSchema);

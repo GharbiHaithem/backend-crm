@@ -93,7 +93,23 @@ exports.getClients = async (req, res) => {
     }
 };
 
-
+exports.searchClient = async(req,res)=>{
+    const{query} = req.query
+    if(!query){
+        return res.status(400).json("parametre de recherche requis")
+    }
+    try {
+        const results=await Client.find({
+            $or:[
+                {nom_prenom:{$regex:query,$options:'i'}},
+                {code:{$regex:query,$options:'i'}}
+            ]
+        })
+        res.status(200).json(results)
+    } catch (error) {
+         res.status(500).json({ message: 'Erreur serveur', error }); 
+    }
+}
 // Récupérer un client par son code
 exports.getClientByCode = async (req, res) => {
     try {

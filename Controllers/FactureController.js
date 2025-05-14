@@ -45,9 +45,24 @@ const deleteFacture = async(req,res)=>{
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+const searchFacture = async(req,res)=>{
+    const{query} = req.query
+    if(!query){
+        return res.status(400).json("parametre de recherche requis")
+    }
+   const results = await Facture.find({
+      $or: [
+        { numFacture: { $regex: query, $options: 'i' } },
+        { 
+          'client.nom_prenom': { $regex: query, $options: 'i' } 
+          // Si la référence est un ObjectId peuplé
+        }
+      ]
+    })
 }
 
 module.exports = {
-      createFacture,getAllFactures,getFactureById,deleteFacture
+      createFacture,getAllFactures,getFactureById,deleteFacture,searchFacture
 
 };

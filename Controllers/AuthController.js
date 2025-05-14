@@ -87,9 +87,87 @@ const lister = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+const editProfile = async (req, res) => {
+    const { name, phone, password, currentPassword, email ,address} = req.body;
+    try {
+        const { _id } = req.user;
 
+        // 1. Trouver l'utilisateur actuel
+        const user = await UserModel.findOne({_id});
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Utilisateur non trouvé" 
+            });
+        }
+
+        // 2. Vérification du mot de passe actuel si fourni
+        if (currentPassword) {
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: "Mot de passe actuel incorrect" 
+                });
+            }
+        }
+
+        // 3. Préparation des données à mettre à jour
+        const updateData = {
+            name: name || user.name,
+            phone: phone || user.phone,
+            email: email || user.email,
+            address : address || user.address
+        };
+
+        // 4. Si nouveau mot de passe fourni, le hacher
+        if (password) {
+            if (!currentPassword) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Le mot de passe actuel est requis pour changer le mot de passe"
+                });
+            }
+            const salt = await bcrypt.genSalt(10);
+            updateData.password = await bcrypt.hash(password, salt);
+        }
+
+        // 5. Mise à jour de l'utilisateur
+        const updatedUser = await UserModel.findByIdAndUpdate(
+            _id,
+            updateData, // Utiliser updateData au lieu de req.body
+            { new: true }
+        ).select('-password'); // Exclure le mot de passe de la réponse
+
+        res.status(200).json({
+            success: true,
+            message: "Profil mis à jour avec succès",
+            user: updatedUser
+        });
+
+    } catch (error) {
+        console.error("Erreur : ", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Erreur serveur lors de la mise à jour du profil" 
+        });
+    }
+};
+const getInfoProfil = async(req,res)=>{
+  try {
+    const {_id} = req.user
+    console.log(req.user)
+    const infoUser= await UserModel.findOne({_id}).select('-password')
+      res.status(200).json(infoUser);
+  } catch (error) {
+      console.error("Erreur : ", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
 module.exports = {
   signup,
   login,
   lister,
+  editProfile,
+  getInfoProfil
 };

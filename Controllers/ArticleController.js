@@ -171,16 +171,18 @@ const updateArticle = async (req, res) => {
     hauteur,
     movement_article,
   } = req.body;
-
+console.log(libelleFamille)
+console.log(libeleCategorie)
+console.log(req.body)
   try {
-    const familleArticle = await Famille.findById(libelleFamille);
-    const categorieArticle = await Categorie.findById(libeleCategorie);
+    // const familleArticle = await Famille.findById(libelleFamille);
+    // const categorieArticle = await Categorie.findById(libeleCategorie);
 
-    if (!familleArticle || !categorieArticle) {
-      return res
-        .status(404)
-        .json({ message: "Famille ou Categorie non trouvée" });
-    }
+    // if (!familleArticle || !categorieArticle) {
+    //   return res
+    //     .status(404)
+    //     .json({ message: "Famille ou Categorie non trouvée" });
+    // }
 
     const updatedArticle = await Article.findByIdAndUpdate(
       id,

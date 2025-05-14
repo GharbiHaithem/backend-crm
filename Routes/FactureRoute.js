@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
-    createFacture,getAllFactures,getFactureById,deleteFacture
+    createFacture,getAllFactures,getFactureById,deleteFacture,searchFacture
    
 } = require('../Controllers/FactureController');
 
@@ -9,7 +9,7 @@ const {
 router.post('/create', createFacture);
 
 router.get('/all', getAllFactures);
-
+router.get('/search', searchFacture);
 router.get('/:id', getFactureById);
 router.delete('/:id', deleteFacture);
 
