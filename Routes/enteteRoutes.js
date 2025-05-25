@@ -43,6 +43,25 @@ router.post('/verifyNumero', async (req, res) => {
         });
     }
 });
+// Exemple route GET
+router.get("/total-par-date/:type/:date", async (req, res) => {
+  const { type, date } = req.params; // ex: type="Devis", date="2025-07-12"
+
+  try {
+    const start = new Date(date);
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+
+    const count = await Entete.countDocuments({
+      type_achat: type,
+      date: { $gte: start, $lte: end },
+    });
+
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ error: "Erreur lors du comptage" });
+  }
+});
 // GET /users?code=12345
 // GET /entetes?code=CL123
 router.get('/searchFilter', async (req, res) => {

@@ -8,7 +8,7 @@ const upload = require("../Middlewares/multerConfig");
 const getArticles = async (req, res) => {
   try {
     const articles = await Article.find()
-      .populate("libelleFamille")
+     
       .populate("libeleCategorie");
     res.status(200).json(articles);
   } catch (error) {
@@ -54,13 +54,13 @@ const createArticle = async (req, res) => {
 
   try {
     // Vérifier si les références existent
-    const familleArticle = await Famille.findById(libelleFamille);
+  
     const categorieArticle = await Categorie.findById(libeleCategorie);
 
-    if (!familleArticle || !categorieArticle) {
+    if ( !categorieArticle) {
       return res
         .status(404)
-        .json({ message: "Référence non trouvée (Famille ou Catégorie)" });
+        .json({ message: "Référence non trouvée " });
     }
 
     // Récupérer l'image depuis req.file (géré par multer)
@@ -75,7 +75,7 @@ const createArticle = async (req, res) => {
     const newArticle = await Article.create({
       code,
       libelle,
-      libelleFamille,
+ 
       Nombre_unite,
       tva,
       type,
@@ -123,7 +123,7 @@ const createArticle = async (req, res) => {
 const getArticleByID = async (req, res) => {
   try {
     const article = await Article.findById(req.params.id)
-      .populate("libelleFamille")
+ 
       .populate("libeleCategorie");
 
     if (!article) {
@@ -141,7 +141,7 @@ const updateArticle = async (req, res) => {
   const { id } = req.params;
   const {
     libelle,
-    libelleFamille,
+ 
     Nombre_unite,
     tva,
     type,
@@ -171,7 +171,7 @@ const updateArticle = async (req, res) => {
     hauteur,
     movement_article,
   } = req.body;
-console.log(libelleFamille)
+
 console.log(libeleCategorie)
 console.log(req.body)
   try {

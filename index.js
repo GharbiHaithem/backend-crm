@@ -27,6 +27,9 @@ app.use('/clients', clientRoutes);
 app.use('/articles', articleRoutes);
 app.use('/categorie', categorieRoutes);
 app.use('/famille', familleRoutes);
+app.use('/caisse', require('./Routes/CaisseRoutes'));
+app.use('/modePayement', require('./Routes/payementRoute'));
+
   app.use('/facture',FactureRouter)
 app.use('/entetes', enteteRoutes);
 app.use('/api/events', eventRoute);

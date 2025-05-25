@@ -16,7 +16,13 @@ const FactureSchema = new mongoose.Schema({
     totalTTC:Number,
     totalHT:Number,
     numFacture:String,
-    status: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid' },
+  montantPayé: { type: Number, default: 0 },  // Ce que le client a déjà payé
+  resteAPayer: { type: Number },              // Ce qui reste à payer
+  status: {
+    type: String,
+    enum: ['unpaid', 'partial', 'paid'],
+    default: 'unpaid',
+  },
 
 });
 

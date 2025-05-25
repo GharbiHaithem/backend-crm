@@ -11,11 +11,7 @@ const ArticleSchema = new Schema({
         type: String,
         required: true,
     },
-    libelleFamille: {
-        type: Schema.Types.ObjectId,
-        ref: 'Famille',  // Correction du nom de référence
-       // required: true,
-    },
+ 
     libeleCategorie: {
         type: Schema.Types.ObjectId,
         ref: 'Categorie',  // Correction du nom de référence
