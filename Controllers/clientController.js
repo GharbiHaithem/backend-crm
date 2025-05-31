@@ -1,5 +1,6 @@
 const Client = require('../Models/Client'); // Assurez-vous que le chemin est correct
-
+const Facture = require('../Models/Facture'); 
+const Entete = require('../Models/Entete'); 
 // Récupérer tous les clients
 exports.getAllClients = async (req, res) => {
     try {
@@ -26,6 +27,10 @@ exports.getClientById = async (req, res) => {
 exports.createClient = async (req, res) => {
     const { nom_prenom, telephone, code, raison_social, matricule_fiscale, adresse, register_commerce, solde_initial, montant_raprochement, code_rapprochement, rapeBl, solde_initiale_bl, montant_reglement_bl, taux_retenu } = req.body;
     try {
+        const client = await Client.findOne({code})
+        if(client){
+          return   res.status(409).json({message:"code client existe déja essayer un autre code"})
+        }
         const newClient = new Client({
             nom_prenom,
             telephone,
@@ -63,15 +68,53 @@ exports.updateClient = async (req, res) => {
 
 // Supprimer un client par ID
 exports.deleteClient = async (req, res) => {
-    try {
-        const deletedClient = await Client.findByIdAndDelete(req.params.id);
-        if (!deletedClient) {
-            return res.status(404).json({ message: 'Client non trouvé' });
-        }
-        res.status(200).json({ message: 'Client supprimé avec succès' });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur', error });
+  const { id } = req.params;
+
+  try {
+    // Vérifier s'il a des factures non payées (reste à payer > 0)
+    const factureImpayee = await Facture.findOne({
+      client: id,
+      resteAPayer: { $gt: 0 }
+    });
+
+    if (factureImpayee) {
+      return res.status(400).json({
+        success: false,
+        message: "Ce client a des factures non payées. Suppression interdite."
+      });
     }
+
+    // Vérifier s’il a des entêtes
+    const enteteExist = await Entete.findOne({ client: id });
+
+    if (enteteExist) {
+      return res.status(400).json({
+        success: false,
+        message: "Ce client a des documents liés (entêtes). Suppression interdite."
+      });
+    }
+
+    // Si aucune facture impayée et pas d'entête : suppression
+    const deleted = await Client.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: "Client introuvable."
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Client supprimé avec succès."
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Erreur serveur lors de la suppression du client."
+    });
+  }
 };
 
 // Récupérer des clients avec recherche et pagination

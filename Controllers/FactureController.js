@@ -4,27 +4,27 @@ const Facture = require('../Models/Facture');
 const createFacture = async (req, res) => {
 
 
-    try {
-      const count=await Facture.countDocuments();
-      const numero=`FACT-${String(count+1).padStart(3,'0')}`
-      console.log(numero)
-        const newFacture = new Facture(
-          {...req.body,numFacture:numero}
+  try {
+    const count = await Facture.countDocuments();
+    const numero = `FACT-${String(count + 1).padStart(3, '0')}`
+    console.log(numero)
+    const newFacture = new Facture(
+      { ...req.body, numFacture: numero }
 
-        );
-        const totalHT = newFacture.lignes.reduce((acc, ligne) => {
-  return acc + ligne.prixHT * ligne.quantite;
-}, 0);
-        console.log(totalHT);
-         newFacture.resteAPayer=totalHT
-        await newFacture.save();
-        res.status(201).json(newFacture);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    );
+    const totalHT = newFacture.lignes.reduce((acc, ligne) => {
+      return acc + ligne.prixHT * ligne.quantite;
+    }, 0);
+    console.log(totalHT);
+    newFacture.resteAPayer = totalHT
+    await newFacture.save();
+    res.status(201).json(newFacture);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-const getAllFactures= async(req,res)=>{
+const getAllFactures = async (req, res) => {
   try {
     const factures = await Facture.find().populate('client')
     console.log(factures)
@@ -33,38 +33,38 @@ const getAllFactures= async(req,res)=>{
     res.status(500).json({ message: error.message });
   }
 };
-const getFactureById= async(req,res)=>{
+const getFactureById = async (req, res) => {
   try {
-    const {id} = req.params
+    const { id } = req.params
     const facture = await Facture.findById(id).populate('client')
     res.status(201).json(facture);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-const deleteFacture = async(req,res)=>{
-    try {
-    const {id} = req.params
+const deleteFacture = async (req, res) => {
+  try {
+    const { id } = req.params
     const facture = await Facture.findByIdAndDelete(id).populate('client')
     res.status(201).json(facture);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-const searchFacture = async(req,res)=>{
-    const{query} = req.query
-    if(!query){
-        return res.status(400).json("parametre de recherche requis")
-    }
-   const results = await Facture.find({
-      $or: [
-        { numFacture: { $regex: query, $options: 'i' } },
-        { 
-          'client.nom_prenom': { $regex: query, $options: 'i' } 
-          // Si la référence est un ObjectId peuplé
-        }
-      ]
-    })
+const searchFacture = async (req, res) => {
+  const { query } = req.query
+  if (!query) {
+    return res.status(400).json("parametre de recherche requis")
+  }
+  const results = await Facture.find({
+    $or: [
+      { numFacture: { $regex: query, $options: 'i' } },
+      {
+        'client.nom_prenom': { $regex: query, $options: 'i' }
+        // Si la référence est un ObjectId peuplé
+      }
+    ]
+  })
 }
 // const payerFactures = async (req, res) => {
 //   try {
@@ -181,15 +181,54 @@ const payerFactures = async (req, res) => {
     }
 
     await Promise.all(updates);
-    res.status(200).json({ message: "Paiement réparti entre les factures avec succès."});
+    res.status(200).json({ message: "Paiement réparti entre les factures avec succès." });
 
   } catch (error) {
     console.error("Erreur paiement :", error);
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
+const getMostUsedArticle = async (req, res) => {
+  try {
+    const result = await Facture.aggregate([
+      { $unwind: "$articles" }, // décompose le tableau d'articles
+      {
+        $group: {
+          _id: "$articles.articleId",
+          totalUtilisation: { $sum: "$articles.Nombre_unite" }
+        }
+      },
+      { $sort: { totalUtilisation: -1 } }, // trie par utilisation décroissante
+      { $limit: 1 }, // prend le plus utilisé
+      {
+        $lookup: {
+          from: "articles",             // nom de la collection liée
+          localField: "_id",            // le champ de regroupement (articleId)
+          foreignField: "_id",          // le champ correspondant dans Article
+          as: "article"
+        }
+      },
+      { $unwind: "$article" },
+      {
+        $project: {
+          _id: 0,
+          nom: "$article.libelle",
+          totalUtilisation: 1
+        }
+      }
+    ]);
 
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Aucun article trouvé" });
+    }
+
+    res.json(result[0]);
+  } catch (error) {
+    console.error("Erreur:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+};
 module.exports = {
-      createFacture,getAllFactures,getFactureById,deleteFacture,searchFacture,payerFactures
+  createFacture, getAllFactures, getFactureById, deleteFacture, searchFacture, payerFactures, getMostUsedArticle
 
 };

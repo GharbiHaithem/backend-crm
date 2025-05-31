@@ -264,6 +264,36 @@ const deleteArticle = async (req, res) => {
     res.status(500).json({ message: "Erreur du serveur.", error });
   }
 };
+const getArticlesBySearch = async (req, res) => {
+  try {
+    let { code, libelle } = req.query;
+
+    // Filtrer les valeurs nulles ou "null" explicites
+    code = code === 'null' || code === null || code === undefined ? null : code;
+    libelle = libelle === 'null' || libelle === null || libelle === undefined ? null : libelle;
+
+    const filter = {};
+    if (code) filter.code = { $regex: new RegExp(code, "i") };
+    if (libelle) filter.libelle = { $regex: new RegExp(libelle, "i") };
+
+    const articles = await Article.find(filter);
+    res.status(200).json(articles);
+  } catch (error) {
+    console.error("Erreur lors du filtrage des articles :", error);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+};
+getArticlesParQuantite = async (req, res) => {
+  try {
+    const articles = await Article.find({})
+      .sort({ Nombre_unite: -1 }).populate('libeleCategorie')
+
+    res.json(articles);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des articles:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+};
 
 module.exports = {
   getArticles,
@@ -272,4 +302,6 @@ module.exports = {
   updateArticle,
   deleteArticle,
   getArticleByCode,
+  getArticlesBySearch,
+  getArticlesParQuantite
 };

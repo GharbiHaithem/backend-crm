@@ -18,7 +18,7 @@ const signup = async (req, res) => {
       name,
       email,
       password: await bcrypt.hash(password, 10),
-      role: role || 'user' // Si aucun rôle n'est spécifié, on assigne 'user' par défaut
+      role: role || 'represantant' // Si aucun rôle n'est spécifié, on assigne 'user' par défaut
     });
 
     await userModel.save();

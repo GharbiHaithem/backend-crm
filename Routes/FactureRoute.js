@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const {
-    createFacture,getAllFactures,getFactureById,deleteFacture,searchFacture,payerFactures
+    createFacture,getAllFactures,getFactureById,deleteFacture,searchFacture,payerFactures,
+    getMostUsedArticle
    
 } = require('../Controllers/FactureController');
 const Facture = require('../Models/Facture');
@@ -56,10 +57,12 @@ if (date) {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+router.get('/most-used-article', getMostUsedArticle);
 router.get('/all', getAllFactures);
 router.get('/search', searchFacture);
 
 router.get('/:id', getFactureById);
+
 router.delete('/:id', deleteFacture);
 router.get('/factureFiltrer', async (req, res) => {
   const { clientid, date } = req.query;
