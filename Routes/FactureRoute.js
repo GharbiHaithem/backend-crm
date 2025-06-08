@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
     createFacture,getAllFactures,getFactureById,deleteFacture,searchFacture,payerFactures,
-    getMostUsedArticle
+    getMostUsedArticle,getTotalResteAPayerDepuisDate,getTotalPayeDepuisDate
    
 } = require('../Controllers/FactureController');
 const Facture = require('../Models/Facture');
@@ -10,7 +10,8 @@ const Facture = require('../Models/Facture');
 // Route pour créer une nouvelle facture client
 router.post('/create', createFacture);
 router.post('/payer', payerFactures);
-
+router.get('/getTotalAmount' , getTotalResteAPayerDepuisDate)
+router.get('/getTotalPayedAmount' , getTotalPayeDepuisDate)
 router.get('/factureFiltrer', async (req, res) => {
   const { clientid, date } = req.query;
 
@@ -112,4 +113,5 @@ if (date) {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+
 module.exports = router;

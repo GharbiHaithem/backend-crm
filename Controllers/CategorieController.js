@@ -35,6 +35,7 @@ const getCategorieByID = async (req, res) => {
         if (!categorie) {
             return res.status(404).json({ message: 'Categorie non trouvée' });
         }
+        
         res.status(200).json(categorie);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -44,12 +45,12 @@ const getCategorieByID = async (req, res) => {
 // Mettre à jour une catégorie
 const updateCategorie = async (req, res) => {
     const { id } = req.params;
-    const { designationCategorie } = req.body;
+    const { designationCategorie , codeCategorie} = req.body;
 
     try {
         const updatedCategorie = await Categorie.findByIdAndUpdate(
             id,
-            { designationCategorie },
+            { designationCategorie , codeCategorie},
             { new: true }
         );
 

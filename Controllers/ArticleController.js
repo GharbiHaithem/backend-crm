@@ -3,7 +3,10 @@ const Famille = require("../Models/Famille");
 const Categorie = require("../Models/Categorie");
 const mongoose = require("mongoose");
 const upload = require("../Middlewares/multerConfig");
-
+const Factute = require('../Models/Facture')
+const Entete = require('../Models/Entete');
+const Facture = require("../Models/Facture");
+const Ligne = require('../Models/Ligne')
 // Get all articles
 const getArticles = async (req, res) => {
   try {
@@ -53,14 +56,16 @@ const createArticle = async (req, res) => {
   } = req.body;
 
   try {
-    // Vérifier si les références existent
-  
+    // Vérifier si la catégorie existe
     const categorieArticle = await Categorie.findById(libeleCategorie);
+    if (!categorieArticle) {
+      return res.status(404).json({ message: "Référence non trouvée" });
+    }
 
-    if ( !categorieArticle) {
-      return res
-        .status(404)
-        .json({ message: "Référence non trouvée " });
+    // 🔐 Vérifier si un article avec ce code existe déjà
+    const existingArticle = await Article.findOne({ code });
+    if (existingArticle) {
+      return res.status(400).json({ message: `Le code ${code} existe déjà.` });
     }
 
     // Récupérer l'image depuis req.file (géré par multer)
@@ -68,14 +73,12 @@ const createArticle = async (req, res) => {
 
     // Convertir les booléens en nombres
     const parsedSerie = serie === "true" || serie === true ? 1 : 0;
-    const parsedDimension =
-      dimension_article === "true" || dimension_article === true ? 1 : 0;
+    const parsedDimension = dimension_article === "true" || dimension_article === true ? 1 : 0;
 
     // Créer un nouvel article
     const newArticle = await Article.create({
       code,
       libelle,
- 
       Nombre_unite,
       tva,
       type,
@@ -110,12 +113,10 @@ const createArticle = async (req, res) => {
     res.status(201).json(newArticle);
   } catch (error) {
     console.error("Erreur lors de la création du Article :", error);
-    res
-      .status(500)
-      .json({
-        message: "Erreur lors de la création du Article.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Erreur lors de la création du Article.",
+      error: error.message,
+    });
   }
 };
 
@@ -125,7 +126,7 @@ const getArticleByID = async (req, res) => {
     const article = await Article.findById(req.params.id)
  
       .populate("libeleCategorie");
-
+console.log({article})
     if (!article) {
       return res.status(404).json({ message: "Article not found" });
     }
@@ -245,25 +246,44 @@ const getArticleByCode = async (req, res) => {
 };
 // Delete article
 const deleteArticle = async (req, res) => {
-  try {
+
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).send(`Pas de Article avec l'ID: ${id}`);
+    try {
+    // Étape 1: Récupérer l'article par son ID
+    const article = await Article.findById(id);
+
+    if (!article) {
+      return res.status(404).json({ message: "Article introuvable." });
     }
 
-    const result = await Article.findByIdAndDelete(id);
+    const articleCode = article.code;
 
-    if (!result) {
-      return res.status(404).send(`Article non trouvé pour l'ID: ${id}`);
+    // Étape 2: Vérifier s'il est utilisé dans une facture non totalement payée
+    const factureAssociee = await Facture.findOne({
+      resteAPayer: { $gt: 0 },
+      lignes: { $elemMatch: { code: articleCode } }
+    });
+
+    if (factureAssociee) {
+      return res.status(400).json({
+        message: `Impossible de supprimer l'article car il est utilisé dans une facture non payée .`,
+      });
     }
 
-    res.json({ message: "Article supprimé avec succès." });
+    // Étape 3: Supprimer l'article
+    await Article.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Article supprimé avec succès." });
+
   } catch (error) {
-    console.error("Error deleting Article:", error);
-    res.status(500).json({ message: "Erreur du serveur.", error });
+    console.error("Erreur lors de la suppression :", error);
+    res.status(500).json({ message: "Erreur serveur.", error });
   }
 };
+
+
+
 const getArticlesBySearch = async (req, res) => {
   try {
     let { code, libelle } = req.query;

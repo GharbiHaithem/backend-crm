@@ -16,7 +16,7 @@ const sendEmail = (data) => {
       to: data.to,
       subject: data.subject,
       text: data.text,
-      html: data.htm,
+      html: data.html,
     })
     .then((info) => {
       console.log("Message sent: %s", info.messageId);

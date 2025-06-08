@@ -39,7 +39,11 @@ const ligneSchema = new mongoose.Schema({
         type: Number,
         required: true,
         min: 0
-      }
+      },
+        code: {
+    type: String,
+    required: false, // facultatif selon ton usage
+  },
     }, { timestamps: true });
    
 

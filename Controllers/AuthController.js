@@ -17,8 +17,8 @@ const signup = async (req, res) => {
     const userModel = new UserModel({
       name,
       email,
-      password: await bcrypt.hash(password, 10),
-      role: role || 'represantant' // Si aucun rôle n'est spécifié, on assigne 'user' par défaut
+      password: password,
+      role: role || 'admin' // Si aucun rôle n'est spécifié, on assigne 'user' par défaut
     });
 
     await userModel.save();
@@ -51,7 +51,8 @@ const login = async (req, res) => {
     if (!isPassEqual) {
       return res.status(403).json({ message: "Échec de l'authentification, email ou mot de passe incorrect", success: false });
     }
-
+    console.log(user)
+console.log(isPassEqual)
     // Création du token JWT
     const jwtToken = jwt.sign(
       { email: user.email, _id: user._id, role: user.role },

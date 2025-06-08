@@ -46,6 +46,7 @@ exports.create = async (req, res) => {
           remise: ligne.remise,
           tva: ligne.tva,
           prixTTC: ligne.prixTTC,
+          code:ligne.code
         });
 
         return await newLigne.save();
@@ -163,7 +164,7 @@ exports.downloadDocumentPDF = async (req, res) => {
     doc
       .fontSize(12)
       .text(`Date: ${new Date(document.date).toLocaleDateString()}`);
-    doc.text(`Client: ${document.client.raisonSociale}`);
+    doc.text(`Client: ${document.client.raison_social}`);
     doc.text(`Total HT: ${document.totalHT.toFixed(2)} €`);
     doc.text(`Total TTC: ${document.totalTTC.toFixed(2)} €`);
     doc.moveDown();
@@ -213,7 +214,7 @@ exports.transformDevisToBonCommande = async (req, res) => {
         const newLigne = new Ligne({
           entete: savedBC._id,
           article: ligne.article,
-          famille: ligne.famille,
+       
           libelleArticle: ligne.libelleArticle,
           quantite: ligne.quantite,
           prixHT: ligne.prixHT,
@@ -262,7 +263,7 @@ exports.transformBonCommandeToFacture = async (req, res) => {
         const newLigne = new Ligne({
           entete: savedFacture._id,
           article: ligne.article,
-          famille: ligne.famille,
+       
           libelleArticle: ligne.libelleArticle,
           quantite: ligne.quantite,
           prixHT: ligne.prixHT,

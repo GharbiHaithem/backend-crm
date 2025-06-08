@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const crypto = require('crypto')
+const bcrypt = require('bcrypt')
 const UserSchema = new Schema({
     name: {
         type: String,
@@ -17,7 +18,7 @@ const UserSchema = new Schema({
     },
     role :{
         type:String,
-        default:"represantant",
+        default:"admin",
         enum:["represantant","admin"]
     },
     address: {

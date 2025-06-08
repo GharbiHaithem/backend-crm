@@ -228,7 +228,86 @@ const getMostUsedArticle = async (req, res) => {
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
+const getTotalResteAPayerDepuisDate = async (req, res) => {
+  const { dateDebut } = req.query;
+  console.log('📅 dateDebut reçue:', dateDebut);
+
+  if (!dateDebut) {
+    return res.status(400).json({ message: "Paramètre 'dateDebut' manquant." });
+  }
+
+  try {
+    const debut = new Date(dateDebut);
+    debut.setUTCHours(0, 0, 0, 0);
+
+    const fin = new Date(); // date actuelle
+    fin.setUTCHours(23, 59, 59, 999); // fin de journée actuelle
+
+    console.log('🔍 Période UTC :', debut.toISOString(), '→', fin.toISOString());
+  console.log('🔍 Période UTC :', debut, '→', fin);
+    const factures = await Facture.find({
+      date: { $gte: debut },
+      resteAPayer: { $gt: 0 },
+    });
+
+    console.log("✅ Nombre de factures trouvées :", factures.length);
+    console.log("🧾 Détails :", factures.map(f => ({ date: f.date, reste: f.resteAPayer })));
+
+    const totalResteAPayer = factures.reduce((total, f) => total + (Number(f.resteAPayer) || 0), 0);
+
+    res.json({
+      totalResteAPayer,
+      nombreFactures: factures.length,
+    });
+
+  } catch (err) {
+    console.error("❌ Erreur serveur :", err);
+    res.status(500).json({ message: "Erreur serveur", err });
+  }
+};
+
+const getTotalPayeDepuisDate = async (req, res) => {
+  const { dateDebut } = req.query;
+  console.log('📅 dateDebut reçue:', dateDebut);
+
+  if (!dateDebut) {
+    return res.status(400).json({ message: "Paramètre 'dateDebut' manquant." });
+  }
+
+  try {
+    const debut = new Date(dateDebut);
+    debut.setUTCHours(0, 0, 0, 0);
+
+    const fin = new Date(); // date actuelle
+    fin.setUTCHours(23, 59, 59, 999);
+
+    console.log('🔍 Période UTC :', debut.toISOString(), '→', fin.toISOString());
+
+    const factures = await Facture.find({
+    
+      resteAPayer: 0, // ✅ totalement payées
+    });
+
+    console.log("✅ Nombre de factures payées :", factures.length);
+    console.log("🧾 Détails :", factures.map(f => ({ date: f.date, total: f.montantPayé, reste: f.resteAPayer })));
+
+    const totalPaye = factures.reduce((total, f) => total + (Number(f.montantPayé) || 0), 0);
+
+    res.json({
+      totalPaye,
+      nombreFactures: factures.length,
+    });
+
+  } catch (err) {
+    console.error("❌ Erreur serveur :", err);
+    res.status(500).json({ message: "Erreur serveur", err });
+  }
+};
+
+
+
+
 module.exports = {
-  createFacture, getAllFactures, getFactureById, deleteFacture, searchFacture, payerFactures, getMostUsedArticle
+ getTotalPayeDepuisDate, createFacture, getAllFactures, getFactureById, deleteFacture, searchFacture, payerFactures, getMostUsedArticle,getTotalResteAPayerDepuisDate
 
 };
