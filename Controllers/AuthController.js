@@ -18,7 +18,7 @@ const signup = async (req, res) => {
       name,
       email,
       password: password,
-      role: role || 'admin' // Si aucun rôle n'est spécifié, on assigne 'user' par défaut
+      role: role || 'represantant' // Si aucun rôle n'est spécifié, on assigne 'user' par défaut
     });
 
     await userModel.save();
